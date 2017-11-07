@@ -3,15 +3,19 @@ package com.example.boyko.mike.groceries;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
 
-public class EditItemActivity extends AppCompatActivity {
+public class EditItemActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     public final static String ACTION_TAG = "action";
 
@@ -32,6 +36,10 @@ public class EditItemActivity extends AppCompatActivity {
     CheckBox coupon;
     EditText notes;
 
+    private final String[] quantityTypeArray = {
+            "", "piece", "bag", "bottle", "box", "case", "jar", "can", "bunch", "dozen", "lbs", "qt", "oz", "cup", "gallon", "Tbsp", "tsp", "g", "kg", "l", "ml", "pt"
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +49,14 @@ public class EditItemActivity extends AppCompatActivity {
 
         name = (EditText) findViewById(R.id.itemName);
         quantity = (TextView) findViewById(R.id.quantity);
+
         quantityType = (Spinner) findViewById(R.id.quantityType);
-        // @todo - Add an array adapter to give this options, and then initialize to the one
-        // item is using.
+        ArrayList<String> quantityTypes = new ArrayList<>(Arrays.asList(quantityTypeArray));
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, quantityTypes);
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        quantityType.setAdapter(dataAdapter);
+        // Spinner click listener
+        quantityType.setOnItemSelectedListener(this);
 
         category = (Spinner) findViewById(R.id.category);
         // @todo - Add an array adapter to give this options, and then initialize to the one
@@ -60,6 +73,9 @@ public class EditItemActivity extends AppCompatActivity {
 
             name.setText(item.name);
             quantity.setText(String.format(Locale.US, "%d", item.quantity));
+            if (item.quantityType != null) {
+                quantityType.setSelection(dataAdapter.getPosition(item.quantityType));
+            }
             coupon.setChecked(item.coupon);
             notes.setText(item.notes);
         }
@@ -98,7 +114,7 @@ public class EditItemActivity extends AppCompatActivity {
         // Update the Item object
         item.name = name.getText().toString();
         item.quantity = Integer.parseInt(quantity.getText().toString());
-        item.quantityType = quantityType.toString();
+        //item.quantityType = quantityType.;
         item.category = category.toString();
         item.coupon = coupon.isChecked();
         item.notes = notes.getText().toString();
@@ -137,4 +153,26 @@ public class EditItemActivity extends AppCompatActivity {
         setResult(IntentConstants.EDIT_ITEM, intent);
         finish();
     }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+        // @todo - There will be 2 spinners, so this needs to check the view.
+
+        // On selecting a spinner item
+        String quantity_type = parent.getItemAtPosition(position).toString();
+
+        if (quantity_type.equals("") || quantity_type == null) {
+            item.quantityType = null;
+        }
+        else {
+            item.quantityType = quantity_type;
+        }
+    }
+
+
+    public void onNothingSelected(AdapterView<?> arg0) {
+        // TODO Auto-generated method stub
+    }
+
 }

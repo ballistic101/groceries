@@ -22,6 +22,7 @@ public class Item implements Parcelable {
     public String notes;          // If there are any notes associated with the item
     public boolean checked;       // Whether or not the Item has been checked off
 
+
     /**
      *  The listView needs this method to determine what to return.
      * @return A string representation of the item for a list.
@@ -29,8 +30,12 @@ public class Item implements Parcelable {
     public String toString() {
         String str = this.name;
 
-        if (quantity > 1) {
-            str = str + " (" + quantity + ")";
+        if (quantity > 1 || (quantity == 1 && quantityType != null)) {
+            str = str + " (" + quantity;
+            if (quantityType != null) {
+                str = str + " " + quantityType;
+            }
+            str = str + ")";
         }
 
         if (notes != null) {
