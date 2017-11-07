@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     // Variables associated with a list view
     ListView listView;
     ArrayList<Item> arrayList;
-    ArrayAdapter<Item> arrayAdapter;
+    ItemArrayAdapter arrayAdapter;
 
     // Variables associated with the "Add an item" edit text box
     EditText newItem;
@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         arrayList = new ArrayList<Item>();
 
         initializeArrayList( arrayList );
-        arrayAdapter = new ArrayAdapter<Item>(this, android.R.layout.simple_list_item_1,arrayList);
+        arrayAdapter = new ItemArrayAdapter(this, android.R.layout.simple_list_item_1,arrayList, this);
         listView.setAdapter(arrayAdapter);
 
         newItem = (EditText) findViewById(R.id.newItem);

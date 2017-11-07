@@ -20,6 +20,7 @@ public class Item implements Parcelable {
     public String category;       // The category for the Item
     public boolean coupon;        // Whether or not there is a coupon
     public String notes;          // If there are any notes associated with the item
+    public boolean checked;       // Whether or not the Item has been checked off
 
     /**
      *  The listView needs this method to determine what to return.
@@ -35,7 +36,7 @@ public class Item implements Parcelable {
         if (notes != null) {
             str = str + "\n" + notes;
         }
-        
+
         return str;
     }
 
@@ -54,6 +55,7 @@ public class Item implements Parcelable {
        out.writeString(this.category);
        out.writeByte((byte) (this.coupon ? 1 : 0));
        out.writeString(this.notes);
+       out.writeByte((byte) (this.checked ? 1 : 0));
     }
 
     private Item(Parcel in) {
@@ -63,6 +65,7 @@ public class Item implements Parcelable {
         category = in.readString();
         coupon = (in.readByte() != 0);
         notes = in.readString();
+        checked = (in.readByte() != 0);
     }
 
     public Item(String name) {
@@ -72,6 +75,7 @@ public class Item implements Parcelable {
         category = null;
         coupon = false;
         notes = null;
+        checked = false;
     }
 
     /**
