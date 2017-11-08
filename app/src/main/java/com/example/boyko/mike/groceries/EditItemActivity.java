@@ -36,11 +36,6 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
     CheckBox coupon;
     EditText notes;
 
-    private final String[] quantityTypeArray = {
-            "", "piece", "bag", "bottle", "box", "case", "jar", "can", "bunch", "dozen", "lbs", "qt", "oz", "cup", "gallon", "Tbsp", "tsp", "g", "kg", "l", "ml", "pt"
-    };
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,8 +46,9 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
         quantity = (TextView) findViewById(R.id.quantity);
 
         quantityType = (Spinner) findViewById(R.id.quantityType);
-        ArrayList<String> quantityTypes = new ArrayList<>(Arrays.asList(quantityTypeArray));
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, quantityTypes);
+        QuantityTypeManager qtyMgr = new QuantityTypeManager();
+        ArrayList<QuantityType> quantityTypes = qtyMgr.getTypes();
+        ArrayAdapter<QuantityType> dataAdapter = new ArrayAdapter<QuantityType>(this, android.R.layout.simple_spinner_item, quantityTypes);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         quantityType.setAdapter(dataAdapter);
         // Spinner click listener
@@ -74,7 +70,15 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
             name.setText(item.name);
             quantity.setText(String.format(Locale.US, "%d", item.quantity));
             if (item.quantityType != null) {
-                quantityType.setSelection(dataAdapter.getPosition(item.quantityType));
+
+                // Loop through the quantity types because dataAdapter.getPosition is calling
+                // toString() under the covers for it's comparison and never finds the object.
+                for (int i=0; i<dataAdapter.getCount(); i++) {
+                    if (dataAdapter.getItem(i).id == item.quantityType.id) {
+                        quantityType.setSelection(i);
+                    }
+                }
+                //quantityType.setSelection(dataAdapter.getPosition(item.quantityType));
             }
             coupon.setChecked(item.coupon);
             notes.setText(item.notes);
@@ -160,9 +164,9 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
         // @todo - There will be 2 spinners, so this needs to check the view.
 
         // On selecting a spinner item
-        String quantity_type = parent.getItemAtPosition(position).toString();
+        QuantityType quantity_type = (QuantityType) parent.getItemAtPosition(position);
 
-        if (quantity_type.equals("") || quantity_type == null) {
+        if (quantity_type.single.equals("none") || quantity_type == null) {
             item.quantityType = null;
         }
         else {

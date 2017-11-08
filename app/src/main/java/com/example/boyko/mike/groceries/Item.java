@@ -16,7 +16,7 @@ public class Item implements Parcelable {
 
     public String name;           // The name of the Item
     public int quantity;          // How much of the Item to get
-    public String quantityType;   // The unit that the Item comes in
+    public QuantityType quantityType;   // The unit that the Item comes in
     public String category;       // The category for the Item
     public boolean coupon;        // Whether or not there is a coupon
     public String notes;          // If there are any notes associated with the item
@@ -33,7 +33,12 @@ public class Item implements Parcelable {
         if (quantity > 1 || (quantity == 1 && quantityType != null)) {
             str = str + " (" + quantity;
             if (quantityType != null) {
-                str = str + " " + quantityType;
+                if (quantity > 1) {
+                    str = str + " " + quantityType.plural;
+                }
+                else {
+                    str = str + " " + quantityType.single;
+                }
             }
             str = str + ")";
         }
@@ -56,7 +61,7 @@ public class Item implements Parcelable {
     public void writeToParcel(Parcel out, int flags) {
        out.writeString(this.name);
        out.writeInt(this.quantity);
-       out.writeString(this.quantityType);
+       out.writeParcelable(this.quantityType, 0);
        out.writeString(this.category);
        out.writeByte((byte) (this.coupon ? 1 : 0));
        out.writeString(this.notes);
@@ -66,7 +71,7 @@ public class Item implements Parcelable {
     private Item(Parcel in) {
         name = in.readString();
         quantity = in.readInt();
-        quantityType = in.readString();
+        quantityType = in.readParcelable(QuantityType.class.getClassLoader());
         category = in.readString();
         coupon = (in.readByte() != 0);
         notes = in.readString();
