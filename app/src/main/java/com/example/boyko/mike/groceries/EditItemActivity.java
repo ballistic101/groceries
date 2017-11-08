@@ -55,8 +55,14 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
         quantityType.setOnItemSelectedListener(this);
 
         category = (Spinner) findViewById(R.id.category);
-        // @todo - Add an array adapter to give this options, and then initialize to the one
-        // item is using.
+        CategoryManager catMgr = new CategoryManager();
+        ArrayList<Category> categories = catMgr.getCategories();
+        ArrayAdapter<Category> categoryArrayAdapter = new ArrayAdapter<Category>(this, android.R.layout.simple_spinner_item, categories);
+        categoryArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        category.setAdapter(categoryArrayAdapter);
+        // Spinner click listener
+        category.setOnItemSelectedListener(this);
+
 
         coupon = (CheckBox) findViewById(R.id.coupon);
         notes = (EditText) findViewById(R.id.notes);
@@ -78,8 +84,18 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
                         quantityType.setSelection(i);
                     }
                 }
-                //quantityType.setSelection(dataAdapter.getPosition(item.quantityType));
             }
+
+            if (item.category != null) {
+                // Loop through the categories because categoryArrayAdapter.getPosition is calling
+                // toString() under the covers for it's comparison and never finds the object.
+                for (int i=0; i<categoryArrayAdapter.getCount(); i++) {
+                    if (categoryArrayAdapter.getItem(i).id == item.category.id) {
+                        category.setSelection(i);
+                    }
+                }
+            }
+
             coupon.setChecked(item.coupon);
             notes.setText(item.notes);
         }
@@ -119,7 +135,7 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
         item.name = name.getText().toString();
         item.quantity = Integer.parseInt(quantity.getText().toString());
         //item.quantityType = quantityType.;
-        item.category = category.toString();
+        //item.category = category;
         item.coupon = coupon.isChecked();
         item.notes = notes.getText().toString();
 
@@ -161,16 +177,20 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-        // @todo - There will be 2 spinners, so this needs to check the view.
+        switch(parent.getId()) {
+            case R.id.quantityType:
+                QuantityType quantity_type = (QuantityType) parent.getItemAtPosition(position);
 
-        // On selecting a spinner item
-        QuantityType quantity_type = (QuantityType) parent.getItemAtPosition(position);
-
-        if (quantity_type.single.equals("none") || quantity_type == null) {
-            item.quantityType = null;
-        }
-        else {
-            item.quantityType = quantity_type;
+                if (quantity_type.single.equals("none") || quantity_type == null) {
+                    item.quantityType = null;
+                } else {
+                    item.quantityType = quantity_type;
+                }
+                break;
+            case R.id.category:
+                Category category = (Category) parent.getItemAtPosition(position);
+                item.category = category;
+                break;
         }
     }
 
