@@ -1,6 +1,5 @@
 package com.example.boyko.mike.groceries;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Paint;
 import android.util.Log;
@@ -25,14 +24,11 @@ public class ItemArrayAdapter extends BaseAdapter {
     private ArrayList<Object> mData;
     private TreeSet<Integer> categoryHeader = new TreeSet<Integer>();
 
-    private Activity activity;
-
     private LayoutInflater mInflater;
 
 
-    public ItemArrayAdapter(Context context, int textViewResourceId, Activity activity) {
+    public ItemArrayAdapter(Context context, int textViewResourceId) {
         this.mData = new ArrayList<Object>();
-        this.activity = activity;
 
         mInflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -104,9 +100,7 @@ public class ItemArrayAdapter extends BaseAdapter {
         Log.v("ConvertView", String.valueOf(position));
 
         if (convertView == null) {
-            LayoutInflater vi = (LayoutInflater)activity.getSystemService(
-                    Context.LAYOUT_INFLATER_SERVICE);
-            convertView = vi.inflate(R.layout.custom_item_list_layout, null);
+            convertView = mInflater.inflate(R.layout.custom_item_list_layout, null);
 
             holder = new ViewHolder();
             holder.item = (TextView) convertView.findViewById(R.id.item);
