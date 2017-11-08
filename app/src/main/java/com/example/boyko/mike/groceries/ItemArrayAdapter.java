@@ -33,6 +33,7 @@ public class ItemArrayAdapter extends BaseAdapter {
         mInflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
+        addSectionHeaderItem(new Category(1, "Uncategorized"));
     }
 
 
@@ -41,7 +42,7 @@ public class ItemArrayAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
-    public void addSectionHeaderItem(final String item) {
+    public void addSectionHeaderItem(Category item) {
         mData.add(item);
         categoryHeader.add(mData.size() - 1);
         notifyDataSetChanged();
@@ -81,6 +82,23 @@ public class ItemArrayAdapter extends BaseAdapter {
     }
 
 
+    /**
+     * A specific kind of get method which checks
+     * if the Object at that position is a category or not.
+     * If it is a category then it will return null. Otherwise
+     * the object is returned.
+     *
+     * @param position The position in the Item ArrayList.
+     * @return null if not found or the object is a CategoryHeader. An Item otherwise.
+     */
+    public Item getListItem(int position) {
+        if (categoryHeader.contains(position)) {
+            return null;
+        }
+        return (Item)getItem(position);
+    }
+
+
     @Override
     public long getItemId(int position) {
         return position;
@@ -99,49 +117,68 @@ public class ItemArrayAdapter extends BaseAdapter {
         ViewHolder holder = null;
         Log.v("ConvertView", String.valueOf(position));
 
+        int rowType = getItemViewType(position);
+
         if (convertView == null) {
-            convertView = mInflater.inflate(R.layout.custom_item_list_layout, null);
 
             holder = new ViewHolder();
-            holder.item = (TextView) convertView.findViewById(R.id.item);
-            holder.checked = (CheckBox) convertView.findViewById(R.id.checkBox1);
-            convertView.setTag(holder);
 
-            holder.checked.setOnClickListener( new View.OnClickListener() {
-                public void onClick(View v) {
-                    CheckBox cb = (CheckBox) v ;
-                    Item item = (Item) cb.getTag();
-                    Log.v("ConvertView","Clicked on Checkbox: " + cb.getText() +
+            switch (rowType) {
+                case TYPE_CATEGORY:
+                    convertView = mInflater.inflate(R.layout.custom_item_list_header_layout, null);
+                    holder.item = (TextView) convertView.findViewById(R.id.textCategoryHeader);
+                    break;
+                case TYPE_ITEM:
+                    convertView = mInflater.inflate(R.layout.custom_item_list_layout, null);
+                    holder.item = (TextView) convertView.findViewById(R.id.item);
+                    holder.checked = (CheckBox) convertView.findViewById(R.id.checkBox1);
+
+                    holder.checked.setOnClickListener( new View.OnClickListener() {
+                        public void onClick(View v) {
+                            CheckBox cb = (CheckBox) v ;
+                            Item item = (Item) cb.getTag();
+                            Log.v("ConvertView","Clicked on Checkbox: " + cb.getText() +
                                     " is " + cb.isChecked());
-                    item.checked = cb.isChecked();
+                            item.checked = cb.isChecked();
 
-                    ViewParent parent = v.getParent();
+                            ViewParent parent = v.getParent();
 
-                    if (parent != null) {
-                        ViewGroup parentGroup = (ViewGroup)parent;
-                        TextView tv = (TextView) parentGroup.findViewById(R.id.item);
+                            if (parent != null) {
+                                ViewGroup parentGroup = (ViewGroup)parent;
+                                TextView tv = (TextView) parentGroup.findViewById(R.id.item);
 
-                        if (item.checked) {
-                            tv.setPaintFlags(tv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                                if (item.checked) {
+                                    tv.setPaintFlags(tv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                                }
+                                else {
+                                    tv.setPaintFlags(tv.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+                                }
+                                notifyDataSetChanged();
+                            }
+
                         }
-                        else {
-                            tv.setPaintFlags(tv.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-                        }
-                        notifyDataSetChanged();
-                    }
+                    });
 
-                }
-            });
+                    break;
+            }
+
+            convertView.setTag(holder);
         }
         else {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        Item item = (Item) mData.get(position);
-        holder.item.setText(item.toString());
-        holder.checked.setChecked(item.checked);
-        // holder.checked.setText(item.toString());
-        holder.checked.setTag(item);
+        switch (rowType) {
+            case TYPE_CATEGORY:
+                holder.item.setText(mData.get(position).toString());
+                break;
+            case TYPE_ITEM:
+                Item item = (Item) mData.get(position);
+                holder.item.setText(item.toString());
+                holder.checked.setChecked(item.checked);
+                holder.checked.setTag(item);
+                break;
+        }
 
         return convertView;
     }

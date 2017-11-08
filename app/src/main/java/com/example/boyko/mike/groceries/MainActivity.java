@@ -42,11 +42,17 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, EditItemActivity.class);
-                intent.putExtra(Item.TAG, (Item)arrayAdapter.getItem(position));
-                intent.putExtra(MainActivity.POSITION_TAG, position);
-                startActivityForResult(intent, IntentConstants.EDIT_ITEM);
+
+                Item clickedItem = arrayAdapter.getListItem(position);
+
+                // Only do something if the User clicked on a List Item and not a header.
+                if (clickedItem != null) {
+                    Intent intent = new Intent();
+                    intent.setClass(MainActivity.this, EditItemActivity.class);
+                    intent.putExtra(Item.TAG, clickedItem);
+                    intent.putExtra(MainActivity.POSITION_TAG, position);
+                    startActivityForResult(intent, IntentConstants.EDIT_ITEM);
+                }
             }
         });
 
