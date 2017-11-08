@@ -8,30 +8,94 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 
-public class ItemArrayAdapter extends ArrayAdapter<Item> {
+public class ItemArrayAdapter extends BaseAdapter {
 
-    private ArrayList<Item> itemList;
+    private static final int TYPE_ITEM = 0;
+    private static final int TYPE_CATEGORY = 1;
+
+    private ArrayList<Object> mData;
+    private TreeSet<Integer> categoryHeader = new TreeSet<Integer>();
+
     private Activity activity;
 
-    public ItemArrayAdapter(Context context, int textViewResourceId,
-                            ArrayList<Item> itemList, Activity activity) {
-        super(context, textViewResourceId, itemList);
-        this.itemList = itemList;
+    private LayoutInflater mInflater;
+
+
+    public ItemArrayAdapter(Context context, int textViewResourceId, Activity activity) {
+        this.mData = new ArrayList<Object>();
         this.activity = activity;
+
+        mInflater = (LayoutInflater) context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
     }
+
+
+    public void addItem(Item item) {
+        mData.add(item);
+        notifyDataSetChanged();
+    }
+
+    public void addSectionHeaderItem(final String item) {
+        mData.add(item);
+        categoryHeader.add(mData.size() - 1);
+        notifyDataSetChanged();
+    }
+
+
+    public void updateItem(int position, Item item) {
+        mData.set(position, item);
+        notifyDataSetChanged();
+    }
+
+
+    public void deleteItem(int position) {
+        mData.remove(position);
+        notifyDataSetChanged();
+    }
+
+
+    @Override
+    public int getItemViewType(int position) {
+        return categoryHeader.contains(position) ? TYPE_CATEGORY : TYPE_ITEM;
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return 2;
+    }
+
+    @Override
+    public int getCount() {
+        return mData.size();
+    }
+
+    @Override
+    public Object getItem(int position) {
+        return mData.get(position);
+    }
+
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
 
     private class ViewHolder {
         TextView item;
         CheckBox checked;
     }
+
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -79,7 +143,7 @@ public class ItemArrayAdapter extends ArrayAdapter<Item> {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        Item item = itemList.get(position);
+        Item item = (Item) mData.get(position);
         holder.item.setText(item.toString());
         holder.checked.setChecked(item.checked);
         // holder.checked.setText(item.toString());

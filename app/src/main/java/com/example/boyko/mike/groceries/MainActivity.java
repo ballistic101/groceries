@@ -8,14 +8,12 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import android.view.KeyEvent;
 import android.content.Intent;
-import java.util.ArrayList;
 
 
 
@@ -26,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
 
     // Variables associated with a list view
     ListView listView;
-    ArrayList<Item> arrayList;
     ItemArrayAdapter arrayAdapter;
 
     // Variables associated with the "Add an item" edit text box
@@ -47,17 +44,17 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent();
                 intent.setClass(MainActivity.this, EditItemActivity.class);
-                intent.putExtra(Item.TAG, arrayList.get(position));
+                intent.putExtra(Item.TAG, (Item)arrayAdapter.getItem(position));
                 intent.putExtra(MainActivity.POSITION_TAG, position);
                 startActivityForResult(intent, IntentConstants.EDIT_ITEM);
             }
         });
 
-        arrayList = new ArrayList<Item>();
 
-        initializeArrayList( arrayList );
-        arrayAdapter = new ItemArrayAdapter(this, android.R.layout.simple_list_item_1,arrayList, this);
+        arrayAdapter = new ItemArrayAdapter(this, android.R.layout.simple_list_item_1, this);
         listView.setAdapter(arrayAdapter);
+        initializeListView( );
+
 
         newItem = (EditText) findViewById(R.id.newItem);
         newItem.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -118,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -139,11 +137,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Update the arrayList with the altered item
-                arrayList.set(position, item);
-
-                // Let the adapter know that the data has changed
-                arrayAdapter.notifyDataSetChanged();
+                arrayAdapter.updateItem(position, item);
                 break;
 
             case EditItemActivity.ACTION_DELETE:
@@ -154,10 +148,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                arrayList.remove(position);
-
-                // Let the adapter know that the data has changed
-                arrayAdapter.notifyDataSetChanged();
+                arrayAdapter.deleteItem(position);
                 break;
 
             case EditItemActivity.ACTION_CANCEL:
@@ -171,11 +162,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     * Temporarily seed the arrayList with Items.
-     *
-     * @param arrayList The array list to populate.
+     * Temporarily seed the ListView with Items.
      */
-    private void initializeArrayList( ArrayList<Item> arrayList) {
+    private void initializeListView( ) {
 
         String[] strings = new String[]{
           "Cheese",
@@ -186,8 +175,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
         for ( String str: strings) {
-            Item item = new Item(str);
-            arrayList.add(item);
+            addInputToList(str);
         }
     }
 
@@ -200,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
     private void addInputToList (String name) {
 
         Item item = new Item(name);
-        arrayList.add(item);
+        arrayAdapter.addItem(item);
         Log.i("Groceries", "Adding " + item.toString());
     }
 
