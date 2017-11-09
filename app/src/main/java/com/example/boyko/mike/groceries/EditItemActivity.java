@@ -55,7 +55,7 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
         quantityType.setOnItemSelectedListener(this);
 
         category = (Spinner) findViewById(R.id.category);
-        CategoryManager catMgr = new CategoryManager();
+        CategoryManager catMgr = CategoryManager.getInstance();
         ArrayList<Category> categories = catMgr.getCategories();
         ArrayAdapter<Category> categoryArrayAdapter = new ArrayAdapter<Category>(this, android.R.layout.simple_spinner_item, categories);
         categoryArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

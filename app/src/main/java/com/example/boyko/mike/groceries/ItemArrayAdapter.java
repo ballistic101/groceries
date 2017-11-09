@@ -22,7 +22,6 @@ public class ItemArrayAdapter extends BaseAdapter {
     private static final int TYPE_CATEGORY = 1;
 
     private ArrayList<Object> mData;
-    private TreeSet<Integer> categoryHeader = new TreeSet<Integer>();
 
     private LayoutInflater mInflater;
 
@@ -33,23 +32,89 @@ public class ItemArrayAdapter extends BaseAdapter {
         mInflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        addSectionHeaderItem(new Category(1, "Uncategorized"));
+        // Find the list of categories and add them in
+        CategoryManager catMgr = CategoryManager.getInstance();
+        ArrayList<Category> categories = catMgr.getCategories();
+
+        for (Category category: categories) {
+            addSectionHeaderItem(category);
+        }
     }
 
 
     public void addItem(Item item) {
-        mData.add(item);
+
+        Category category = item.category;
+
+        if (category == null) {
+            category = CategoryManager.getInstance().getUncategorized();
+        }
+
+        boolean added = false;
+        for (int i=0; i<mData.size(); i++) {
+            Object obj = mData.get(i);
+
+            if (obj instanceof Category) {
+                if (((Category)obj).id == category.id) {
+                    mData.add(i+1, item);
+                    added = true;
+                    break;
+                }
+            }
+        }
+
+        if (!added) {
+            if (category == null) {
+                Log.e("Groceries", "Somehow category is null in addItem!");
+                return;
+            }
+            else {
+                Log.e("Groceries", "Somehow category is illegal in addItem!");
+                return;
+            }
+        }
+        //mData.add(item);
         notifyDataSetChanged();
     }
+
 
     public void addSectionHeaderItem(Category item) {
         mData.add(item);
-        categoryHeader.add(mData.size() - 1);
         notifyDataSetChanged();
     }
 
 
+    /**
+     * When updating an item it is best to re-add it again if
+     * the category changed.
+     * @param position
+     * @param item
+     */
     public void updateItem(int position, Item item) {
+
+        Object obj = mData.get(position);
+
+        if (obj == null) {
+            // For some reason there was no object at that position, so just add it.
+            addItem(item);
+            return;
+        }
+
+        if (obj instanceof Category) {
+            // For some reason that position is occupied by a Category.
+            // Just add the item.
+            addItem(item);
+            return;
+        }
+
+        if (! categoriesEqual(item.category, ((Item)obj).category)) {
+            // The category changed. Remove the item from the list and re-add it.
+            mData.remove(position);
+            addItem(item);
+            return;
+        }
+
+        // The item changed, but the category did not. Just replace it in-situ.
         mData.set(position, item);
         notifyDataSetChanged();
     }
@@ -63,7 +128,7 @@ public class ItemArrayAdapter extends BaseAdapter {
 
     @Override
     public int getItemViewType(int position) {
-        return categoryHeader.contains(position) ? TYPE_CATEGORY : TYPE_ITEM;
+        return mData.get(position) instanceof Category ? TYPE_CATEGORY : TYPE_ITEM;
     }
 
     @Override
@@ -92,7 +157,7 @@ public class ItemArrayAdapter extends BaseAdapter {
      * @return null if not found or the object is a CategoryHeader. An Item otherwise.
      */
     public Item getListItem(int position) {
-        if (categoryHeader.contains(position)) {
+        if (getItemViewType(position) == TYPE_CATEGORY) {
             return null;
         }
         return (Item)getItem(position);
@@ -102,6 +167,27 @@ public class ItemArrayAdapter extends BaseAdapter {
     @Override
     public long getItemId(int position) {
         return position;
+    }
+
+
+    /**
+     * Compare two categories to see if they are the same.
+     * @param c1 Category1
+     * @param c2 Category2
+     * @return true if the categories are the same, or both are null.
+     */
+    private boolean categoriesEqual(Category c1, Category c2) {
+        if (c1 == null && c2 != null) {
+            return false;
+        }
+        else if (c1 != null && c2 == null) {
+            return false;
+        }
+        else if (c1 == null && c2 == null) {
+            return true;
+        }
+
+        return c1.id == c2.id;
     }
 
 
