@@ -1,6 +1,7 @@
 package com.example.boyko.mike.groceries;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -256,7 +257,9 @@ public class ItemArrayAdapter extends BaseAdapter {
 
         switch (rowType) {
             case TYPE_CATEGORY:
-                holder.item.setText(mData.get(position).toString());
+                Category category = (Category) mData.get(position);
+                holder.item.setText(category.toString());
+                holder.item.setBackgroundColor(Color.parseColor(category.color));
                 break;
             case TYPE_ITEM:
                 Item item = (Item) mData.get(position);

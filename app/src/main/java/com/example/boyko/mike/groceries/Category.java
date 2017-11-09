@@ -13,8 +13,11 @@ public class Category implements Parcelable {
 
     public static final String TAG = "Category";
 
+    public static final String DEFAULT_COLOR="#e2e2e2";
+
     public int id;
     public String name;
+    public String color;
 
 
     public Category() {}
@@ -23,6 +26,13 @@ public class Category implements Parcelable {
     public Category(int id, String name) {
         this.id = id;
         this.name = name;
+        this.color = DEFAULT_COLOR;
+    }
+
+    public Category(int id, String name, String color) {
+        this.id = id;
+        this.name = name;
+        this.color = color;
     }
 
 
@@ -42,11 +52,13 @@ public class Category implements Parcelable {
     public void writeToParcel(Parcel out, int flags) {
         out.writeInt(this.id);
         out.writeString(this.name);
+        out.writeString(this.color);
     }
 
     private Category(Parcel in) {
         id = in.readInt();
         name = in.readString();
+        color = in.readString();
     }
 
     /**

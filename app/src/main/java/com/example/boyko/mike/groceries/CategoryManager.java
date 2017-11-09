@@ -84,9 +84,9 @@ public class CategoryManager {
     private void generateCategories() {
 
         addCategory(new Category(getNewId(), UNCATEGORIZED));
-        addCategory(new Category(getNewId(), "Cub"));
-        addCategory(new Category(getNewId(), "Costco"));
-        addCategory(new Category(getNewId(), "Kwik Trip"));
+        addCategory(new Category(getNewId(), "Cub", "#ae9c9c"));
+        addCategory(new Category(getNewId(), "Costco", "#90a1a3"));
+        addCategory(new Category(getNewId(), "Kwik Trip", "#97a585"));
     }
 
 
