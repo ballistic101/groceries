@@ -11,10 +11,12 @@ import android.view.ViewParent;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.example.boyko.mike.groceries.db.models.Category;
+import com.example.boyko.mike.groceries.db.models.ListItem;
+import com.example.boyko.mike.groceries.repositories.CategoryRepository;
 
 import java.util.ArrayList;
-import java.util.TreeSet;
 
 
 public class ItemArrayAdapter extends BaseAdapter {
@@ -34,7 +36,7 @@ public class ItemArrayAdapter extends BaseAdapter {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         // Find the list of categories and add them in
-        CategoryManager catMgr = CategoryManager.getInstance();
+        CategoryRepository catMgr = CategoryRepository.getInstance();
         ArrayList<Category> categories = catMgr.getCategories();
 
         for (Category category: categories) {
@@ -43,12 +45,12 @@ public class ItemArrayAdapter extends BaseAdapter {
     }
 
 
-    public void addItem(Item item) {
+    public void addItem(ListItem listItem) {
 
-        Category category = item.category;
+        Category category = listItem.category;
 
         if (category == null) {
-            category = CategoryManager.getInstance().getUncategorized();
+            category = CategoryRepository.getInstance().getUncategorized();
         }
 
         boolean added = false;
@@ -57,7 +59,7 @@ public class ItemArrayAdapter extends BaseAdapter {
 
             if (obj instanceof Category) {
                 if (((Category)obj).id == category.id) {
-                    mData.add(i+1, item);
+                    mData.add(i+1, listItem);
                     added = true;
                     break;
                 }
@@ -74,7 +76,7 @@ public class ItemArrayAdapter extends BaseAdapter {
                 return;
             }
         }
-        //mData.add(item);
+        //mData.add(listItem);
         notifyDataSetChanged();
     }
 
@@ -86,37 +88,37 @@ public class ItemArrayAdapter extends BaseAdapter {
 
 
     /**
-     * When updating an item it is best to re-add it again if
+     * When updating an listItem it is best to re-add it again if
      * the category changed.
      * @param position
-     * @param item
+     * @param listItem
      */
-    public void updateItem(int position, Item item) {
+    public void updateItem(int position, ListItem listItem) {
 
         Object obj = mData.get(position);
 
         if (obj == null) {
             // For some reason there was no object at that position, so just add it.
-            addItem(item);
+            addItem(listItem);
             return;
         }
 
         if (obj instanceof Category) {
             // For some reason that position is occupied by a Category.
-            // Just add the item.
-            addItem(item);
+            // Just add the listItem.
+            addItem(listItem);
             return;
         }
 
-        if (! categoriesEqual(item.category, ((Item)obj).category)) {
-            // The category changed. Remove the item from the list and re-add it.
+        if (! categoriesEqual(listItem.category, ((ListItem)obj).category)) {
+            // The category changed. Remove the listItem from the list and re-add it.
             mData.remove(position);
-            addItem(item);
+            addItem(listItem);
             return;
         }
 
-        // The item changed, but the category did not. Just replace it in-situ.
-        mData.set(position, item);
+        // The listItem changed, but the category did not. Just replace it in-situ.
+        mData.set(position, listItem);
         notifyDataSetChanged();
     }
 
@@ -154,14 +156,14 @@ public class ItemArrayAdapter extends BaseAdapter {
      * If it is a category then it will return null. Otherwise
      * the object is returned.
      *
-     * @param position The position in the Item ArrayList.
-     * @return null if not found or the object is a CategoryHeader. An Item otherwise.
+     * @param position The position in the ListItem ArrayList.
+     * @return null if not found or the object is a CategoryHeader. An ListItem otherwise.
      */
-    public Item getListItem(int position) {
+    public ListItem getListItem(int position) {
         if (getItemViewType(position) == TYPE_CATEGORY) {
             return null;
         }
-        return (Item)getItem(position);
+        return (ListItem)getItem(position);
     }
 
 
@@ -223,10 +225,10 @@ public class ItemArrayAdapter extends BaseAdapter {
                     holder.checked.setOnClickListener( new View.OnClickListener() {
                         public void onClick(View v) {
                             CheckBox cb = (CheckBox) v ;
-                            Item item = (Item) cb.getTag();
+                            ListItem listItem = (ListItem) cb.getTag();
                             Log.v("ConvertView","Clicked on Checkbox: " + cb.getText() +
                                     " is " + cb.isChecked());
-                            item.checked = cb.isChecked();
+                            listItem.checked = cb.isChecked();
 
                             ViewParent parent = v.getParent();
 
@@ -234,7 +236,7 @@ public class ItemArrayAdapter extends BaseAdapter {
                                 ViewGroup parentGroup = (ViewGroup)parent;
                                 TextView tv = (TextView) parentGroup.findViewById(R.id.item);
 
-                                if (item.checked) {
+                                if (listItem.checked) {
                                     tv.setPaintFlags(tv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                                 }
                                 else {
@@ -262,10 +264,10 @@ public class ItemArrayAdapter extends BaseAdapter {
                 holder.item.setBackgroundColor(Color.parseColor(category.color));
                 break;
             case TYPE_ITEM:
-                Item item = (Item) mData.get(position);
-                holder.item.setText(item.toString());
-                holder.checked.setChecked(item.checked);
-                holder.checked.setTag(item);
+                ListItem listItem = (ListItem) mData.get(position);
+                holder.item.setText(listItem.toString());
+                holder.checked.setChecked(listItem.checked);
+                holder.checked.setTag(listItem);
                 break;
         }
 

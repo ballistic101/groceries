@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.view.KeyEvent;
 import android.content.Intent;
 
+import com.example.boyko.mike.groceries.db.models.ListItem;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -26,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     ListView listView;
     ItemArrayAdapter arrayAdapter;
 
-    // Variables associated with the "Add an item" edit text box
+    // Variables associated with the "Add an listItem" edit text box
     EditText newItem;
 
     @Override
@@ -43,13 +44,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                Item clickedItem = arrayAdapter.getListItem(position);
+                ListItem clickedListItem = arrayAdapter.getListItem(position);
 
-                // Only do something if the User clicked on a List Item and not a header.
-                if (clickedItem != null) {
+                // Only do something if the User clicked on a List ListItem and not a header.
+                if (clickedListItem != null) {
                     Intent intent = new Intent();
                     intent.setClass(MainActivity.this, EditItemActivity.class);
-                    intent.putExtra(Item.TAG, clickedItem);
+                    intent.putExtra(ListItem.TAG, clickedListItem);
                     intent.putExtra(MainActivity.POSITION_TAG, position);
                     startActivityForResult(intent, IntentConstants.EDIT_ITEM);
                 }
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                         // Grab the text
                         String input = newItem.getText().toString();
 
-                        // Add the item to the list
+                        // Add the listItem to the list
                         addInputToList(input);
 
                         // Clear out the text box
@@ -108,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
+        // Handle action bar listItem clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
@@ -135,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
         switch(action) {
             case EditItemActivity.ACTION_UPDATE:
-                Item item = data.getParcelableExtra(Item.TAG);
+                ListItem listItem = data.getParcelableExtra(ListItem.TAG);
                 position = data.getIntExtra(MainActivity.POSITION_TAG, -1);
 
                 if (position == MainActivity.ILLEGAL_POSITION) {
@@ -143,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                arrayAdapter.updateItem(position, item);
+                arrayAdapter.updateItem(position, listItem);
                 break;
 
             case EditItemActivity.ACTION_DELETE:
@@ -187,15 +188,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     * Add a new Item to the Item list.
+     * Add a new ListItem to the ListItem list.
      *
-     * @param name The Item name
+     * @param name The ListItem name
      */
     private void addInputToList (String name) {
 
-        Item item = new Item(name);
-        arrayAdapter.addItem(item);
-        Log.i("Groceries", "Adding " + item.toString());
+        ListItem listItem = new ListItem(name);
+        arrayAdapter.addItem(listItem);
+        Log.i("Groceries", "Adding " + listItem.toString());
     }
 
 }

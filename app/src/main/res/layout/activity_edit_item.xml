@@ -101,7 +101,7 @@
             android:id="@+id/coupon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="I have a coupon for this item" />
+            tools:text="I have a coupon for this listItem" />
 
         <EditText
             android:id="@+id/notes"

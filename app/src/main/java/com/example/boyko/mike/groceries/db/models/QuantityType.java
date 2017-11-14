@@ -1,5 +1,9 @@
-package com.example.boyko.mike.groceries;
+package com.example.boyko.mike.groceries.db.models;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -9,18 +13,26 @@ import android.os.Parcelable;
  * dried pasta, or a can of tuna.
  */
 
+@Entity
 public class QuantityType implements Parcelable {
 
     public static final String TAG = "QuantityType";
 
+    @PrimaryKey(autoGenerate = true)
     public int id;
+
+    @ColumnInfo(name = "single")
     public String single;
+
+    @ColumnInfo(name = "plural")
     public String plural;
 
 
+    @Ignore
     public QuantityType() {}
 
 
+    // This is the constructor that Room will use.
     public QuantityType(int id, String single, String plural) {
         this.id = id;
         this.single = single;
