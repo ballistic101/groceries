@@ -102,7 +102,7 @@ public class CategoryRepository {
         Thread thread = new Thread() {
             @Override
             public void run() {
-                categories.addAll(AppDatabase.getInstance(Groceries.getAppContext()).categoryDao().getAll());
+                //categories.addAll(AppDatabase.getInstance(Groceries.getAppContext()).categoryDao().getAll());
                 Log.i("Groceries", "Loaded all the categories. Count = " + categories.size());
                 latch.countDown();
             }

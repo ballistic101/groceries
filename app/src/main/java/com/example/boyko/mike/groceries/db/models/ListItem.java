@@ -15,11 +15,12 @@ import android.os.Parcel;
  * Created by mike on 11/6/17.
  */
 
-@Entity(foreignKeys = {
+@Entity(tableName = "list_item",
+        foreignKeys = {
         @ForeignKey(
                 entity = QuantityType.class,
                 parentColumns = "id",
-                childColumns = "quantityId",
+                childColumns = "quantity_type_id",
                 onDelete = ForeignKey.SET_NULL
         ),
         @ForeignKey(

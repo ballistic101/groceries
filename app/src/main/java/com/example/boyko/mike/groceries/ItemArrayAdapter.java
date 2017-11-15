@@ -1,5 +1,6 @@
 package com.example.boyko.mike.groceries;
 
+import android.content.ClipData;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -17,6 +18,7 @@ import com.example.boyko.mike.groceries.db.models.ListItem;
 import com.example.boyko.mike.groceries.repositories.CategoryRepository;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class ItemArrayAdapter extends BaseAdapter {
@@ -24,24 +26,62 @@ public class ItemArrayAdapter extends BaseAdapter {
     private static final int TYPE_ITEM = 0;
     private static final int TYPE_CATEGORY = 1;
 
+    // Keep these internal lists because they are how the list gets built
+    private List<Category> categories;
+    private List<ListItem> items;
+
+    // These are the actual rows in the ListView
     private ArrayList<Object> mData;
+
+    private Category uncategorized;
 
     private LayoutInflater mInflater;
 
 
     public ItemArrayAdapter(Context context, int textViewResourceId) {
-        this.mData = new ArrayList<Object>();
+        categories = new ArrayList<Category>();
+        items = new ArrayList<ListItem>();
+        mData = new ArrayList<Object>();
+
+        uncategorized = new Category(Category.UNCATEGORIZED);
 
         mInflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
 
-        // Find the list of categories and add them in
-        CategoryRepository catMgr = CategoryRepository.getInstance();
-        ArrayList<Category> categories = catMgr.getCategories();
 
+    public void setCategories(List<Category> categories) {
+        this.categories = categories;
+        recalcList();
+    }
+
+
+    public void setItems(List<ListItem> items) {
+        this.items = items;
+        recalcList();
+    }
+
+
+    public void recalcList() {
+
+        // First, wipe out the list.
+        mData.clear();
+
+        // Then add the uncategorized type
+        addSectionHeaderItem(uncategorized);
+
+        // Then add all the categories
         for (Category category: categories) {
             addSectionHeaderItem(category);
         }
+
+        // And then add all the items
+        for (ListItem item: items) {
+            addItem(item);
+        }
+
+        // Finally, notify the view itself that the data has changed.
+        notifyDataSetChanged();
     }
 
 
@@ -50,7 +90,7 @@ public class ItemArrayAdapter extends BaseAdapter {
         Category category = listItem.category;
 
         if (category == null) {
-            category = CategoryRepository.getInstance().getUncategorized();
+            category = uncategorized;
         }
 
         boolean added = false;
@@ -76,14 +116,11 @@ public class ItemArrayAdapter extends BaseAdapter {
                 return;
             }
         }
-        //mData.add(listItem);
-        notifyDataSetChanged();
     }
 
 
     public void addSectionHeaderItem(Category item) {
         mData.add(item);
-        notifyDataSetChanged();
     }
 
 
@@ -219,7 +256,7 @@ public class ItemArrayAdapter extends BaseAdapter {
                     break;
                 case TYPE_ITEM:
                     convertView = mInflater.inflate(R.layout.custom_item_list_layout, null);
-                    holder.item = (TextView) convertView.findViewById(R.id.item);
+                    holder.item = (TextView) convertView.findViewById(R.id.listItem);
                     holder.checked = (CheckBox) convertView.findViewById(R.id.checkBox1);
 
                     holder.checked.setOnClickListener( new View.OnClickListener() {
@@ -234,7 +271,7 @@ public class ItemArrayAdapter extends BaseAdapter {
 
                             if (parent != null) {
                                 ViewGroup parentGroup = (ViewGroup)parent;
-                                TextView tv = (TextView) parentGroup.findViewById(R.id.item);
+                                TextView tv = (TextView) parentGroup.findViewById(R.id.listItem);
 
                                 if (listItem.checked) {
                                     tv.setPaintFlags(tv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);

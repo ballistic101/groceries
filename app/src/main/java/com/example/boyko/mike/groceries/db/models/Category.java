@@ -19,6 +19,7 @@ import android.os.Parcelable;
 public class Category implements Parcelable {
 
     public static final String TAG = "Category";
+    public static final String UNCATEGORIZED = "Uncategorized";
 
     public static final String DEFAULT_COLOR="#e2e2e2";
 

@@ -13,7 +13,7 @@ import android.os.Parcelable;
  * dried pasta, or a can of tuna.
  */
 
-@Entity
+@Entity(tableName = "quantity_type")
 public class QuantityType implements Parcelable {
 
     public static final String TAG = "QuantityType";

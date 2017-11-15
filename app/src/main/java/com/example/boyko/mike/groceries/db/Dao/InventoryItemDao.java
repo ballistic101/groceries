@@ -6,7 +6,8 @@ import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
-import com.example.boyko.mike.groceries.db.models.ListItem;
+
+import com.example.boyko.mike.groceries.db.models.InventoryItem;
 
 import java.util.List;
 
@@ -16,27 +17,27 @@ import java.util.List;
  */
 
 @Dao
-public interface ListItemDao {
+public interface InventoryItemDao {
 
-    @Query("SELECT COUNT(*) FROM list_item")
+    @Query("SELECT COUNT(*) FROM inventory_item")
     int count();
 
-    @Query("SELECT * FROM list_item ")
-    LiveData<List<ListItem>> getAll();
+    @Query("SELECT * FROM inventory_item ")
+    LiveData<List<InventoryItem>> getAll();
 
-    @Query("SELECT * FROM list_item WHERE name = :name")
-    ListItem findByName(String name);
-
-    @Insert
-    void insertAll(List<ListItem> listItems);
+    @Query("SELECT * FROM inventory_item WHERE name = :name")
+    InventoryItem findByName(String name);
 
     @Insert
-    long insert(ListItem listItem);
+    void insertAll(List<InventoryItem> listItems);
+
+    @Insert
+    long insert(InventoryItem listItem);
 
     @Update
-    void update(ListItem listItem);
+    void update(InventoryItem listItem);
 
     @Delete
-    void delete(ListItem listItem);
+    void delete(InventoryItem listItem);
 
 }

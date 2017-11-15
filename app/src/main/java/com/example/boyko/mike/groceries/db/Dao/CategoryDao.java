@@ -1,10 +1,13 @@
 package com.example.boyko.mike.groceries.db.Dao;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
+
+import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 
 import com.example.boyko.mike.groceries.db.models.Category;
 
@@ -21,7 +24,7 @@ public interface CategoryDao {
     int count();
 
     @Query("SELECT * FROM category ")
-    List<Category> getAll();
+    LiveData<List<Category>> getAll();
 
     @Query("SELECT * FROM category WHERE name = :name")
     Category findByName(String name);
@@ -29,7 +32,7 @@ public interface CategoryDao {
     @Insert
     void insertAll(List<Category> categories);
 
-    @Insert
+    @Insert(onConflict = REPLACE)
     long insert(Category category);
 
     @Update

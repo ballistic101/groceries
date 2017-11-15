@@ -1,5 +1,6 @@
 package com.example.boyko.mike.groceries.db.Dao;
 
+import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
@@ -13,6 +14,7 @@ import java.util.List;
  * The Data Access Object for Quantity Types
  */
 
+@Dao
 public interface QuantityTypeDao {
 
 

@@ -39,7 +39,6 @@ class DatabaseInitUtil {
     }
 
     private static void generateCategoryData(List<Category> categories) {
-        categories.add(new Category(CategoryRepository.UNCATEGORIZED));
         categories.add(new Category("Cub", "#ae9c9c"));
         categories.add(new Category("Costco", "#90a1a3"));
         categories.add(new Category("Kwik Trip", "#97a585"));
