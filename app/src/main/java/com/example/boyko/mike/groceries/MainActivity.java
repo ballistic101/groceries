@@ -19,7 +19,6 @@ import android.view.KeyEvent;
 import android.content.Intent;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import com.example.boyko.mike.groceries.db.models.Category;
 import com.example.boyko.mike.groceries.db.models.InventoryItem;
@@ -27,9 +26,6 @@ import com.example.boyko.mike.groceries.db.models.ListItem;
 
 
 public class MainActivity extends AppCompatActivity {
-
-    public final static String POSITION_TAG = "Postition Tag";
-    public final static int ILLEGAL_POSITION = -1;
 
     // This keeps the listView data separate from the View. Layers...
     private ListItemViewModel listItemViewModel;
@@ -71,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
                     Intent intent = new Intent();
                     intent.setClass(MainActivity.this, EditItemActivity.class);
                     intent.putExtra(ListItem.TAG, clickedListItem);
-                    intent.putExtra(MainActivity.POSITION_TAG, position);
                     startActivityForResult(intent, IntentConstants.EDIT_ITEM);
                 }
             }
@@ -122,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         ListItem item = new ListItem(inventoryItem.name);
-                        item.categoryId = inventoryItem.id;
+                        item.categoryId = inventoryItem.categoryId;
 
                         // Add the listItem to the list
                         listItemViewModel.addItem(item);
@@ -183,30 +178,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String action = data.getStringExtra(EditItemActivity.ACTION_TAG);
-        int position = -1;
+        ListItem listItem;
 
         switch(action) {
             case EditItemActivity.ACTION_UPDATE:
-                ListItem listItem = data.getParcelableExtra(ListItem.TAG);
-                position = data.getIntExtra(MainActivity.POSITION_TAG, -1);
-
-                if (position == MainActivity.ILLEGAL_POSITION) {
-                    Log.e("Groceries", "Illegal intent position detected.");
-                    return;
-                }
-
-                arrayAdapter.updateItem(position, listItem);
+                listItem = data.getParcelableExtra(ListItem.TAG);
+                listItemViewModel.saveItem(listItem);
                 break;
 
             case EditItemActivity.ACTION_DELETE:
-                position = data.getIntExtra(MainActivity.POSITION_TAG, -1);
-
-                if (position == MainActivity.ILLEGAL_POSITION) {
-                    Log.e("Groceries", "Illegal intent position detected.");
-                    return;
-                }
-
-                arrayAdapter.deleteItem(position);
+                listItem = data.getParcelableExtra(ListItem.TAG);
+                listItemViewModel.deleteItem(listItem);
                 break;
 
             case EditItemActivity.ACTION_CANCEL:
@@ -217,42 +199,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("Groceries", "Illegal intent action detected (" + action + ").");
         }
     }
-
-
-    /**
-     * Temporarily seed the ListView with Items.
-     */
-    /*
-    private void initializeListView( ) {
-
-        String[] strings = new String[]{
-          "Cheese",
-          "Milk",
-          "Oranges",
-          "Bananas",
-          "Corn"
-        };
-
-        for ( String str: strings) {
-            addInputToList(str);
-        }
-    }
-    */
-
-
-    /**
-     * Add a new ListItem to the ListItem list.
-     *
-     * @param name The ListItem name
-     */
-    /*
-    private void addInputToList (String name) {
-
-        ListItem listItem = new ListItem(name);
-        arrayAdapter.addItem(listItem);
-        Log.i("Groceries", "Adding " + listItem.toString());
-    }
-    */
 
 
     /**

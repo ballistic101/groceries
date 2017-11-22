@@ -1,5 +1,7 @@
 package com.example.boyko.mike.groceries;
 
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,6 +20,7 @@ import com.example.boyko.mike.groceries.repositories.CategoryRepository;
 import com.example.boyko.mike.groceries.repositories.QuantityTypeRepository;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class EditItemActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -31,8 +34,7 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
     // The ListItem being edited
     ListItem listItem;
 
-    // The main activity passes in information about the listItem for it's use
-    int position;
+    QuantityTypeViewModel quantityTypeViewModel;
 
     EditText name;
     TextView quantity;
@@ -50,10 +52,13 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
         name = (EditText) findViewById(R.id.itemName);
         quantity = (TextView) findViewById(R.id.quantity);
 
+        quantityTypeViewModel = ViewModelProviders.of(this).get(QuantityTypeViewModel.class);
+
         quantityType = (Spinner) findViewById(R.id.quantityType);
         QuantityTypeRepository qtyMgr = new QuantityTypeRepository();
-        ArrayList<QuantityType> quantityTypes = qtyMgr.getTypes();
-        ArrayAdapter<QuantityType> dataAdapter = new ArrayAdapter<QuantityType>(this, android.R.layout.simple_spinner_item, quantityTypes);
+        //LiveData<List<QuantityType>> quantityTypes = quantityTypeViewModel.getTypes();
+        //ArrayAdapter<QuantityType> dataAdapter = new ArrayAdapter<QuantityType>(this, android.R.layout.simple_spinner_item, quantityTypes);
+        ArrayAdapter<QuantityType> dataAdapter = new ArrayAdapter<QuantityType>(this, android.R.layout.simple_spinner_item, new ArrayList<QuantityType>());
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         quantityType.setAdapter(dataAdapter);
         // Spinner click listener
@@ -78,7 +83,6 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
         Intent intent = getIntent();
         if (intent != null) {
             listItem = intent.getParcelableExtra(ListItem.TAG);
-            position = intent.getIntExtra(MainActivity.POSITION_TAG, MainActivity.ILLEGAL_POSITION);
 
             name.setText(listItem.name);
             quantity.setText(String.format(Locale.US, "%d", listItem.quantity));
@@ -148,7 +152,6 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
 
         Intent intent = new Intent();
         intent.putExtra(ListItem.TAG, listItem);
-        intent.putExtra(MainActivity.POSITION_TAG, position);
         intent.putExtra(EditItemActivity.ACTION_TAG, EditItemActivity.ACTION_UPDATE);
         setResult(IntentConstants.EDIT_ITEM, intent);
         finish();
@@ -162,7 +165,7 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
      */
     public void deleteItem(View v) {
         Intent intent = new Intent();
-        intent.putExtra(MainActivity.POSITION_TAG, position);
+        intent.putExtra(ListItem.TAG, listItem);
         intent.putExtra(EditItemActivity.ACTION_TAG, EditItemActivity.ACTION_DELETE);
         setResult(IntentConstants.EDIT_ITEM, intent);
         finish();
@@ -175,7 +178,6 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
      */
     public void cancelItem(View v) {
         Intent intent = new Intent();
-        intent.putExtra(MainActivity.POSITION_TAG, position);
         intent.putExtra(EditItemActivity.ACTION_TAG, EditItemActivity.ACTION_CANCEL);
         setResult(IntentConstants.EDIT_ITEM, intent);
         finish();

@@ -7,6 +7,7 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 import com.example.boyko.mike.groceries.db.models.ListItem;
+import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 
 import java.util.List;
 
@@ -27,10 +28,10 @@ public interface ListItemDao {
     @Query("SELECT * FROM list_item WHERE name = :name")
     ListItem findByName(String name);
 
-    @Insert
+    @Insert(onConflict = REPLACE)
     void insertAll(List<ListItem> listItems);
 
-    @Insert
+    @Insert(onConflict = REPLACE)
     long insert(ListItem listItem);
 
     @Update

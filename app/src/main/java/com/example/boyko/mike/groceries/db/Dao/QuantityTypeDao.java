@@ -1,5 +1,6 @@
 package com.example.boyko.mike.groceries.db.Dao;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
@@ -22,7 +23,7 @@ public interface QuantityTypeDao {
     int count();
 
     @Query("SELECT * FROM quantity_type ")
-    List<QuantityType> getAll();
+    LiveData<List<QuantityType>> getAll();
 
     @Query("SELECT * FROM quantity_type WHERE single = :single")
     QuantityType findBySingle(String single);

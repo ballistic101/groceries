@@ -3,11 +3,14 @@ package com.example.boyko.mike.groceries;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.example.boyko.mike.groceries.db.AppDatabase;
 import com.example.boyko.mike.groceries.db.models.ListItem;
+import com.example.boyko.mike.groceries.repositories.ListItemRepository;
 
 import java.util.List;
 
@@ -19,18 +22,18 @@ import java.util.List;
 
 public class ListItemViewModel extends AndroidViewModel {
 
-    private final LiveData<List<ListItem>> items;
-
-    private AppDatabase appDatabase;
-
+    private ListItemRepository repo;
+    private LiveData<List<ListItem>> items;
 
     public ListItemViewModel(@NonNull Application application) {
         super(application);
 
-        appDatabase = AppDatabase.getInstance(this.getApplication());
+        repo = new ListItemRepository(application);
 
-        items = appDatabase.listItemDao().getAll();
-
+        // Note that the ListItem is being assigned the MutableLiveData.
+        // This works because that class extends LiveData.
+        items = new MutableLiveData<List<ListItem>>();
+        items = repo.getItems();
     }
 
 
@@ -40,42 +43,16 @@ public class ListItemViewModel extends AndroidViewModel {
 
 
     public void deleteItem(ListItem item) {
-        new deleteAsyncTask(appDatabase).execute(item);
-    }
-
-    private static class deleteAsyncTask extends AsyncTask<ListItem, Void, Void> {
-
-        private AppDatabase db;
-
-        deleteAsyncTask(AppDatabase appDatabase) {
-            db = appDatabase;
-        }
-
-        @Override
-        protected Void doInBackground(final ListItem... params) {
-            db.listItemDao().delete(params[0]);
-            return null;
-        }
+        repo.deleteItem(item);
     }
 
 
     public void addItem(final ListItem item) {
-        new addAsyncTask(appDatabase).execute(item);
+        repo.addItem(item);
     }
 
 
-    private static class addAsyncTask extends AsyncTask<ListItem, Void, Void> {
-
-        private AppDatabase db;
-
-        addAsyncTask(AppDatabase appDatabase) {
-            db = appDatabase;
-        }
-
-        @Override
-        protected Void doInBackground(final ListItem... params) {
-            db.listItemDao().insert(params[0]);
-            return null;
-        }
+    public void saveItem(final ListItem item) {
+        repo.saveItem(item);
     }
 }

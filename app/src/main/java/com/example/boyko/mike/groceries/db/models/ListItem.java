@@ -101,25 +101,31 @@ public class ListItem implements Parcelable {
     }
 
     public void writeToParcel(Parcel out, int flags) {
-       out.writeString(this.name);
-       out.writeInt(this.quantity);
-       out.writeLong(this.quantityTypeId);
-       out.writeParcelable(this.quantityType, 0);
-       out.writeLong(this.categoryId);
-       out.writeParcelable(this.category, 0);
-       out.writeByte((byte) (this.coupon ? 1 : 0));
-       out.writeString(this.notes);
-       out.writeByte((byte) (this.checked ? 1 : 0));
+        out.writeValue(this.id);
+        out.writeString(this.name);
+        out.writeInt(this.quantity);
+
+        // writeValue instead of writeLong because this could be null
+        out.writeValue(this.quantityTypeId);
+        out.writeParcelable(this.quantityType, 0);
+
+        // writeValue instead of writeLong because this could be null
+        out.writeValue(this.categoryId);
+        out.writeParcelable(this.category, 0);
+        out.writeByte((byte) (this.coupon ? 1 : 0));
+        out.writeString(this.notes);
+        out.writeByte((byte) (this.checked ? 1 : 0));
     }
 
 
     @Ignore
     private ListItem(Parcel in) {
+        id = (Long)in.readValue(Long.class.getClassLoader());
         name = in.readString();
         quantity = in.readInt();
-        quantityTypeId = in.readLong();
+        quantityTypeId = (Long)in.readValue(Long.class.getClassLoader());
         quantityType = in.readParcelable(QuantityType.class.getClassLoader());
-        categoryId = in.readLong();
+        categoryId = (Long)in.readValue(Long.class.getClassLoader());
         category = in.readParcelable(Category.class.getClassLoader());
         coupon = (in.readByte() != 0);
         notes = in.readString();
