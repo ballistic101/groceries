@@ -1,4 +1,10 @@
-package com.example.boyko.mike.groceries;
+package com.example.boyko.mike.groceries.db.models;
+
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.Index;
+import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.ColumnInfo;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -9,32 +15,46 @@ import android.os.Parcelable;
  * a store, or ... anything else, really.
  */
 
+@Entity(indices = {@Index("name")})
 public class Category implements Parcelable {
 
     public static final String TAG = "Category";
+    public static final String UNCATEGORIZED = "Uncategorized";
 
     public static final String DEFAULT_COLOR="#e2e2e2";
 
+    @PrimaryKey(autoGenerate = true)
     public int id;
+
+    @ColumnInfo(name = "name")
     public String name;
+
+    @ColumnInfo(name = "color")
     public String color;
 
 
+    @Ignore
     public Category() {}
 
 
-    public Category(int id, String name) {
-        this.id = id;
+    @Ignore
+    public Category(String name) {
         this.name = name;
         this.color = DEFAULT_COLOR;
     }
 
+    @Ignore
+    public Category(String name, String color) {
+        this.name = name;
+        this.color = color;
+    }
+
+    // This is the constructor that Room will use.
     public Category(int id, String name, String color) {
         this.id = id;
         this.name = name;
         this.color = color;
     }
-
 
     public String toString() {
         return name;

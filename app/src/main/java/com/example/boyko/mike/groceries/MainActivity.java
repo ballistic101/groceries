@@ -1,6 +1,9 @@
 package com.example.boyko.mike.groceries;
 
+import android.arch.lifecycle.ViewModelProviders;
+import android.arch.lifecycle.Observer;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -15,19 +18,29 @@ import android.widget.TextView;
 import android.view.KeyEvent;
 import android.content.Intent;
 
+import java.util.List;
+
+import com.example.boyko.mike.groceries.db.models.Category;
+import com.example.boyko.mike.groceries.db.models.InventoryItem;
+import com.example.boyko.mike.groceries.db.models.ListItem;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    public final static String POSITION_TAG = "Postition Tag";
-    public final static int ILLEGAL_POSITION = -1;
+    // This keeps the listView data separate from the View. Layers...
+    private ListItemViewModel listItemViewModel;
+    private CategoryViewModel categoryViewModel;
+
+    private InventoryItemViewModel inventoryItemViewModel;
 
     // Variables associated with a list view
-    ListView listView;
-    ItemArrayAdapter arrayAdapter;
+    private ListView listView;
+    private ItemArrayAdapter arrayAdapter;
 
-    // Variables associated with the "Add an item" edit text box
-    EditText newItem;
+    // Variables associated with the "Add an listItem" edit text box
+    private EditText newItem;
+    private List<InventoryItem> inventoryItems;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +49,10 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        listItemViewModel = ViewModelProviders.of(this).get(ListItemViewModel.class);
+        categoryViewModel = ViewModelProviders.of(this).get(CategoryViewModel.class);
+        inventoryItemViewModel = ViewModelProviders.of(this).get(InventoryItemViewModel.class);
+
         listView = (ListView) findViewById(R.id.listView);
 
         // Add a listener for clicks on the Items
@@ -43,14 +60,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                Item clickedItem = arrayAdapter.getListItem(position);
+                ListItem clickedListItem = arrayAdapter.getListItem(position);
 
-                // Only do something if the User clicked on a List Item and not a header.
-                if (clickedItem != null) {
+                // Only do something if the User clicked on a List ListItem and not a header.
+                if (clickedListItem != null) {
                     Intent intent = new Intent();
                     intent.setClass(MainActivity.this, EditItemActivity.class);
-                    intent.putExtra(Item.TAG, clickedItem);
-                    intent.putExtra(MainActivity.POSITION_TAG, position);
+                    intent.putExtra(ListItem.TAG, clickedListItem);
                     startActivityForResult(intent, IntentConstants.EDIT_ITEM);
                 }
             }
@@ -59,8 +75,28 @@ public class MainActivity extends AppCompatActivity {
 
         arrayAdapter = new ItemArrayAdapter(this, android.R.layout.simple_list_item_1);
         listView.setAdapter(arrayAdapter);
-        initializeListView( );
+        // initializeListView( );
 
+        listItemViewModel.getListItems().observe(MainActivity.this, new Observer<List<ListItem>>() {
+            @Override
+            public void onChanged(@Nullable List<ListItem> listItems) {
+                arrayAdapter.setItems(listItems);
+            }
+        });
+
+        categoryViewModel.getCategories().observe(MainActivity.this, new Observer<List<Category>>() {
+            @Override
+            public void onChanged(@Nullable List<Category> categories) {
+                 arrayAdapter.setCategories(categories);
+            }
+        });
+
+        inventoryItemViewModel.getInventoryItems().observe(MainActivity.this, new Observer<List<InventoryItem>>() {
+            @Override
+            public void onChanged(@Nullable List<InventoryItem> changedInventoryItems) {
+                inventoryItems = changedInventoryItems;
+            }
+        });
 
         newItem = (EditText) findViewById(R.id.newItem);
         newItem.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -73,8 +109,19 @@ public class MainActivity extends AppCompatActivity {
                         // Grab the text
                         String input = newItem.getText().toString();
 
-                        // Add the item to the list
-                        addInputToList(input);
+                        InventoryItem inventoryItem = getInventoryItem(input);
+
+                        if (inventoryItem ==  null) {
+                            inventoryItem = new InventoryItem(input);
+                            inventoryItemViewModel.addInventoryItem(inventoryItem);
+                        }
+
+                        ListItem item = new ListItem(inventoryItem.name);
+                        item.categoryId = inventoryItem.categoryId;
+
+                        // Add the listItem to the list
+                        listItemViewModel.addItem(item);
+                        // addInputToList(input);
 
                         // Clear out the text box
                         newItem.setText("");
@@ -108,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
+        // Handle action bar listItem clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
@@ -131,30 +178,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String action = data.getStringExtra(EditItemActivity.ACTION_TAG);
-        int position = -1;
+        ListItem listItem;
 
         switch(action) {
             case EditItemActivity.ACTION_UPDATE:
-                Item item = data.getParcelableExtra(Item.TAG);
-                position = data.getIntExtra(MainActivity.POSITION_TAG, -1);
-
-                if (position == MainActivity.ILLEGAL_POSITION) {
-                    Log.e("Groceries", "Illegal intent position detected.");
-                    return;
-                }
-
-                arrayAdapter.updateItem(position, item);
+                listItem = data.getParcelableExtra(ListItem.TAG);
+                listItemViewModel.saveItem(listItem);
                 break;
 
             case EditItemActivity.ACTION_DELETE:
-                position = data.getIntExtra(MainActivity.POSITION_TAG, -1);
-
-                if (position == MainActivity.ILLEGAL_POSITION) {
-                    Log.e("Groceries", "Illegal intent position detected.");
-                    return;
-                }
-
-                arrayAdapter.deleteItem(position);
+                listItem = data.getParcelableExtra(ListItem.TAG);
+                listItemViewModel.deleteItem(listItem);
                 break;
 
             case EditItemActivity.ACTION_CANCEL:
@@ -168,34 +202,17 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     * Temporarily seed the ListView with Items.
-     */
-    private void initializeListView( ) {
-
-        String[] strings = new String[]{
-          "Cheese",
-          "Milk",
-          "Oranges",
-          "Bananas",
-          "Corn"
-        };
-
-        for ( String str: strings) {
-            addInputToList(str);
-        }
-    }
-
-
-    /**
-     * Add a new Item to the Item list.
+     * Get the Inventory Item with the given name.
      *
-     * @param name The Item name
+     * @param name The name of the Inventory Item to find.
+     * @return InventoryItem if found, null otherwise.
      */
-    private void addInputToList (String name) {
-
-        Item item = new Item(name);
-        arrayAdapter.addItem(item);
-        Log.i("Groceries", "Adding " + item.toString());
+    private InventoryItem getInventoryItem(String name) {
+        for (InventoryItem item: inventoryItems) {
+            if (item.name.equals(name)) {
+                return item;
+            }
+        }
+        return null;
     }
-
 }
