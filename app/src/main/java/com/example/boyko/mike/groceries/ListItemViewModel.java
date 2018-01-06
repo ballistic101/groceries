@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.example.boyko.mike.groceries.db.AppDatabase;
 import com.example.boyko.mike.groceries.db.models.ListItem;
+import com.example.boyko.mike.groceries.db.models.ListItemComplete;
 import com.example.boyko.mike.groceries.repositories.ListItemRepository;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class ListItemViewModel extends AndroidViewModel {
 
     private ListItemRepository repo;
     private LiveData<List<ListItem>> items;
+    private LiveData<List<ListItemComplete>> completeItems;
 
     public ListItemViewModel(@NonNull Application application) {
         super(application);
@@ -34,6 +36,9 @@ public class ListItemViewModel extends AndroidViewModel {
         // This works because that class extends LiveData.
         items = new MutableLiveData<List<ListItem>>();
         items = repo.getItems();
+
+        completeItems = new MutableLiveData<>();
+        completeItems = repo.getItemsComplete();
     }
 
 
@@ -41,11 +46,13 @@ public class ListItemViewModel extends AndroidViewModel {
         return items;
     }
 
+    public LiveData<List<ListItemComplete>> getListItemsComplete() { return completeItems; }
 
     public void deleteItem(ListItem item) {
         repo.deleteItem(item);
     }
 
+    public void deleteItemComplete(ListItemComplete item) { deleteItem(item.listItem);}
 
     public void addItem(final ListItem item) {
         repo.addItem(item);
@@ -55,4 +62,6 @@ public class ListItemViewModel extends AndroidViewModel {
     public void saveItem(final ListItem item) {
         repo.saveItem(item);
     }
+
+    public void saveItemComplete(final ListItemComplete item) { saveItem(item.listItem); }
 }

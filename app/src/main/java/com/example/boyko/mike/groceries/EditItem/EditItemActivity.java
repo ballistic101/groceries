@@ -1,8 +1,9 @@
-package com.example.boyko.mike.groceries;
+package com.example.boyko.mike.groceries.EditItem;
 
-import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.AdapterView;
@@ -13,11 +14,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.view.View;
 
+import com.example.boyko.mike.groceries.IntentConstants;
+import com.example.boyko.mike.groceries.R;
 import com.example.boyko.mike.groceries.db.models.Category;
-import com.example.boyko.mike.groceries.db.models.ListItem;
+import com.example.boyko.mike.groceries.db.models.ListItemComplete;
 import com.example.boyko.mike.groceries.db.models.QuantityType;
-import com.example.boyko.mike.groceries.repositories.CategoryRepository;
-import com.example.boyko.mike.groceries.repositories.QuantityTypeRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,16 +33,17 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
     public final static String ACTION_CANCEL = "cancel";
 
     // The ListItem being edited
-    ListItem listItem;
+    private ListItemComplete listItem;
 
-    QuantityTypeViewModel quantityTypeViewModel;
+    private EditItemViewModel editItemViewModel;
+    private QuantityTypeAdapter quantityTypeAdapter;
 
-    EditText name;
-    TextView quantity;
-    Spinner quantityType;
-    Spinner category;
-    CheckBox coupon;
-    EditText notes;
+    private EditText name;
+    private TextView quantity;
+    private Spinner quantityType;
+    private Spinner category;
+    private CheckBox coupon;
+    private EditText notes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,15 +54,12 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
         name = (EditText) findViewById(R.id.itemName);
         quantity = (TextView) findViewById(R.id.quantity);
 
-        quantityTypeViewModel = ViewModelProviders.of(this).get(QuantityTypeViewModel.class);
+        editItemViewModel = ViewModelProviders.of(this).get(EditItemViewModel.class);
 
         quantityType = (Spinner) findViewById(R.id.quantityType);
-        QuantityTypeRepository qtyMgr = new QuantityTypeRepository();
-        //LiveData<List<QuantityType>> quantityTypes = quantityTypeViewModel.getTypes();
-        //ArrayAdapter<QuantityType> dataAdapter = new ArrayAdapter<QuantityType>(this, android.R.layout.simple_spinner_item, quantityTypes);
-        ArrayAdapter<QuantityType> dataAdapter = new ArrayAdapter<QuantityType>(this, android.R.layout.simple_spinner_item, new ArrayList<QuantityType>());
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        quantityType.setAdapter(dataAdapter);
+        quantityTypeAdapter = new QuantityTypeAdapter(this, android.R.layout.simple_spinner_item);
+        quantityTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        quantityType.setAdapter(quantityTypeAdapter);
         // Spinner click listener
         quantityType.setOnItemSelectedListener(this);
 
@@ -75,6 +74,21 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
         // Spinner click listener
         category.setOnItemSelectedListener(this);
 
+        editItemViewModel.getQuantityTypes().observe(this, new Observer<List<QuantityType>>() {
+            @Override
+            public void onChanged(@Nullable List<QuantityType> types) {
+                quantityTypeAdapter.setQuantityTypes(types);
+
+                // With the types now in place, set the quantity type if it was set before.
+                if (listItem.listItem.quantityTypeId != null) {
+                    for (int i=0; i<quantityTypeAdapter.getCount(); i++) {
+                        if (((QuantityType)quantityTypeAdapter.getItem(i)).id == listItem.listItem.quantityTypeId) {
+                            quantityType.setSelection(i);
+                        }
+                    }
+                }
+            }
+        });
 
         coupon = (CheckBox) findViewById(R.id.coupon);
         notes = (EditText) findViewById(R.id.notes);
@@ -82,16 +96,16 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
         // If there is an intent, then fill in the listItem
         Intent intent = getIntent();
         if (intent != null) {
-            listItem = intent.getParcelableExtra(ListItem.TAG);
+            listItem = intent.getParcelableExtra(ListItemComplete.TAG);
 
-            name.setText(listItem.name);
-            quantity.setText(String.format(Locale.US, "%d", listItem.quantity));
-            if (listItem.quantityType != null) {
+            name.setText(listItem.listItem.name);
+            quantity.setText(String.format(Locale.US, "%d", listItem.listItem.quantity));
+            if (listItem.listItem.quantityTypeId != null) {
 
-                // Loop through the quantity types because dataAdapter.getPosition is calling
+                // Loop through the quantity types because quantityTypeAdapter.getPosition is calling
                 // toString() under the covers for it's comparison and never finds the object.
-                for (int i=0; i<dataAdapter.getCount(); i++) {
-                    if (dataAdapter.getItem(i).id == listItem.quantityType.id) {
+                for (int i=0; i<quantityTypeAdapter.getCount(); i++) {
+                    if (((QuantityType)quantityTypeAdapter.getItem(i)).id == listItem.listItem.quantityTypeId) {
                         quantityType.setSelection(i);
                     }
                 }
@@ -107,32 +121,32 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
                 }
             }
 
-            coupon.setChecked(listItem.coupon);
-            notes.setText(listItem.notes);
+            coupon.setChecked(listItem.listItem.coupon);
+            notes.setText(listItem.listItem.notes);
         }
         else {
-            listItem = new ListItem("Unknown");
+            listItem = new ListItemComplete("Unknown");
         }
 
     }
 
 
     public void increaseQuantity(View view) {
-        listItem.quantity++;
-        quantity.setText(String.format(Locale.US,"%d", listItem.quantity));
+        listItem.listItem.quantity++;
+        quantity.setText(String.format(Locale.US,"%d", listItem.listItem.quantity));
     }
 
 
     public void decreaseQuantity(View view) {
 
         // Ensure that the quantity cannot become nothing or empty.
-        if (listItem.quantity <= 1) {
-            listItem.quantity = 1;
+        if (listItem.listItem.quantity <= 1) {
+            listItem.listItem.quantity = 1;
         }
         else {
-            listItem.quantity--;
+            listItem.listItem.quantity--;
         }
-        quantity.setText(String.format(Locale.US,"%d", listItem.quantity));
+        quantity.setText(String.format(Locale.US,"%d", listItem.listItem.quantity));
     }
 
     /**
@@ -143,15 +157,19 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
     public void saveItem(View v) {
 
         // Update the ListItem object
-        listItem.name = name.getText().toString();
-        listItem.quantity = Integer.parseInt(quantity.getText().toString());
+        listItem.listItem.name = name.getText().toString();
+        listItem.listItem.quantity = Integer.parseInt(quantity.getText().toString());
+        listItem.quantityType = (QuantityType)quantityType.getSelectedItem();
+        if (listItem.quantityType != null) {
+            listItem.listItem.quantityTypeId = new Long(listItem.quantityType.id);
+        }
         //listItem.quantityType = quantityType.;
         //listItem.category = category;
-        listItem.coupon = coupon.isChecked();
-        listItem.notes = notes.getText().toString();
+        listItem.listItem.coupon = coupon.isChecked();
+        listItem.listItem.notes = notes.getText().toString();
 
         Intent intent = new Intent();
-        intent.putExtra(ListItem.TAG, listItem);
+        intent.putExtra(ListItemComplete.TAG, listItem);
         intent.putExtra(EditItemActivity.ACTION_TAG, EditItemActivity.ACTION_UPDATE);
         setResult(IntentConstants.EDIT_ITEM, intent);
         finish();
@@ -165,7 +183,7 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
      */
     public void deleteItem(View v) {
         Intent intent = new Intent();
-        intent.putExtra(ListItem.TAG, listItem);
+        intent.putExtra(ListItemComplete.TAG, listItem);
         intent.putExtra(EditItemActivity.ACTION_TAG, EditItemActivity.ACTION_DELETE);
         setResult(IntentConstants.EDIT_ITEM, intent);
         finish();

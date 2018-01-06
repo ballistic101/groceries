@@ -2,13 +2,13 @@ package com.example.boyko.mike.groceries.repositories;
 
 import android.app.Application;
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.example.boyko.mike.groceries.db.AppDatabase;
 import com.example.boyko.mike.groceries.db.models.ListItem;
+import com.example.boyko.mike.groceries.db.models.ListItemComplete;
 
 import java.util.List;
 
@@ -32,6 +32,10 @@ public class ListItemRepository {
         return appDatabase.listItemDao().getAll();
     }
 
+
+    public LiveData<List<ListItemComplete>> getItemsComplete() {
+        return appDatabase.listItemDao().getAllComplete();
+    }
 
     public void deleteItem(ListItem item) {
         new deleteAsyncTask(appDatabase).execute(item);

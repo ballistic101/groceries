@@ -1,9 +1,11 @@
 package com.example.boyko.mike.groceries.db.models;
 
 import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Embedded;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcelable;
 import android.os.Parcel;
@@ -28,8 +30,11 @@ import android.os.Parcel;
                 parentColumns = "id",
                 childColumns = "category_id",
                 onDelete = ForeignKey.SET_NULL
-        )
-})
+        )},
+        indices = {
+        @Index(value = "quantity_type_id"),
+        @Index(value = "category_id")}
+)
 public class ListItem implements Parcelable {
 
     public static final String TAG = "ListItem";
@@ -46,14 +51,8 @@ public class ListItem implements Parcelable {
     @ColumnInfo(name = "quantity_type_id")
     public Long quantityTypeId;
 
-    @Ignore
-    public QuantityType quantityType;   // The unit that the ListItem comes in
-
     @ColumnInfo(name="category_id")
     public Long categoryId;
-
-    @Ignore
-    public Category category;       // The category for the ListItem
 
     @ColumnInfo(name = "coupon")
     public boolean coupon;        // Whether or not there is a coupon
@@ -64,33 +63,6 @@ public class ListItem implements Parcelable {
     @ColumnInfo(name = "checked")
     public boolean checked;       // Whether or not the ListItem has been checked off
 
-
-    /**
-     *  The listView needs this method to determine what to return.
-     * @return A string representation of the listItem for a list.
-     */
-    public String toString() {
-        String str = this.name;
-
-        if (quantity > 1 || (quantity == 1 && quantityType != null)) {
-            str = str + " (" + quantity;
-            if (quantityType != null) {
-                if (quantity > 1) {
-                    str = str + " " + quantityType.plural;
-                }
-                else {
-                    str = str + " " + quantityType.single;
-                }
-            }
-            str = str + ")";
-        }
-
-        if (notes != null) {
-            str = str + "\n" + notes;
-        }
-
-        return str;
-    }
 
     /**
      * A required method for Parcelable
@@ -107,11 +79,9 @@ public class ListItem implements Parcelable {
 
         // writeValue instead of writeLong because this could be null
         out.writeValue(this.quantityTypeId);
-        out.writeParcelable(this.quantityType, 0);
 
         // writeValue instead of writeLong because this could be null
         out.writeValue(this.categoryId);
-        out.writeParcelable(this.category, 0);
         out.writeByte((byte) (this.coupon ? 1 : 0));
         out.writeString(this.notes);
         out.writeByte((byte) (this.checked ? 1 : 0));
@@ -124,9 +94,7 @@ public class ListItem implements Parcelable {
         name = in.readString();
         quantity = in.readInt();
         quantityTypeId = (Long)in.readValue(Long.class.getClassLoader());
-        quantityType = in.readParcelable(QuantityType.class.getClassLoader());
         categoryId = (Long)in.readValue(Long.class.getClassLoader());
-        category = in.readParcelable(Category.class.getClassLoader());
         coupon = (in.readByte() != 0);
         notes = in.readString();
         checked = (in.readByte() != 0);
@@ -138,9 +106,7 @@ public class ListItem implements Parcelable {
         this.name = name;
         quantity = 1;
         quantityTypeId = null;
-        quantityType = null;
         categoryId = null;
-        category = null;
         coupon = false;
         notes = null;
         checked = false;

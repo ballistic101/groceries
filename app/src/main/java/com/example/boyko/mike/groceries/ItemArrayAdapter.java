@@ -14,8 +14,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.example.boyko.mike.groceries.db.models.Category;
-import com.example.boyko.mike.groceries.db.models.ListItem;
-import com.example.boyko.mike.groceries.repositories.CategoryRepository;
+import com.example.boyko.mike.groceries.db.models.ListItemComplete;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,7 @@ public class ItemArrayAdapter extends BaseAdapter {
 
     // Keep these internal lists because they are how the list gets built
     private List<Category> categories;
-    private List<ListItem> items;
+    private List<ListItemComplete> items;
 
     // These are the actual rows in the ListView
     private ArrayList<Object> mData;
@@ -40,7 +39,7 @@ public class ItemArrayAdapter extends BaseAdapter {
 
     public ItemArrayAdapter(Context context, int textViewResourceId) {
         categories = new ArrayList<Category>();
-        items = new ArrayList<ListItem>();
+        items = new ArrayList<ListItemComplete>();
         mData = new ArrayList<Object>();
 
         uncategorized = new Category(Category.UNCATEGORIZED);
@@ -56,7 +55,7 @@ public class ItemArrayAdapter extends BaseAdapter {
     }
 
 
-    public void setItems(List<ListItem> items) {
+    public void setItems(List<ListItemComplete> items) {
         this.items = items;
         recalcList();
     }
@@ -76,7 +75,7 @@ public class ItemArrayAdapter extends BaseAdapter {
         }
 
         // And then add all the items
-        for (ListItem item: items) {
+        for (ListItemComplete item: items) {
             addItem(item);
         }
 
@@ -85,7 +84,7 @@ public class ItemArrayAdapter extends BaseAdapter {
     }
 
 
-    public void addItem(ListItem listItem) {
+    public void addItem(ListItemComplete listItem) {
 
         Category category = listItem.category;
 
@@ -130,7 +129,7 @@ public class ItemArrayAdapter extends BaseAdapter {
      * @param position
      * @param listItem
      */
-    public void updateItem(int position, ListItem listItem) {
+    public void updateItem(int position, ListItemComplete listItem) {
 
         Object obj = mData.get(position);
 
@@ -147,7 +146,7 @@ public class ItemArrayAdapter extends BaseAdapter {
             return;
         }
 
-        if (! categoriesEqual(listItem.category, ((ListItem)obj).category)) {
+        if (! categoriesEqual(listItem.category, ((ListItemComplete)obj).category)) {
             // The category changed. Remove the listItem from the list and re-add it.
             mData.remove(position);
             addItem(listItem);
@@ -196,11 +195,11 @@ public class ItemArrayAdapter extends BaseAdapter {
      * @param position The position in the ListItem ArrayList.
      * @return null if not found or the object is a CategoryHeader. An ListItem otherwise.
      */
-    public ListItem getListItem(int position) {
+    public ListItemComplete getListItem(int position) {
         if (getItemViewType(position) == TYPE_CATEGORY) {
             return null;
         }
-        return (ListItem)getItem(position);
+        return (ListItemComplete)getItem(position);
     }
 
 
@@ -262,10 +261,10 @@ public class ItemArrayAdapter extends BaseAdapter {
                     holder.checked.setOnClickListener( new View.OnClickListener() {
                         public void onClick(View v) {
                             CheckBox cb = (CheckBox) v ;
-                            ListItem listItem = (ListItem) cb.getTag();
+                            ListItemComplete listItem = (ListItemComplete) cb.getTag();
                             Log.v("ConvertView","Clicked on Checkbox: " + cb.getText() +
                                     " is " + cb.isChecked());
-                            listItem.checked = cb.isChecked();
+                            listItem.listItem.checked = cb.isChecked();
 
                             ViewParent parent = v.getParent();
 
@@ -273,7 +272,7 @@ public class ItemArrayAdapter extends BaseAdapter {
                                 ViewGroup parentGroup = (ViewGroup)parent;
                                 TextView tv = (TextView) parentGroup.findViewById(R.id.listItem);
 
-                                if (listItem.checked) {
+                                if (listItem.listItem.checked) {
                                     tv.setPaintFlags(tv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                                 }
                                 else {
@@ -301,9 +300,9 @@ public class ItemArrayAdapter extends BaseAdapter {
                 holder.item.setBackgroundColor(Color.parseColor(category.color));
                 break;
             case TYPE_ITEM:
-                ListItem listItem = (ListItem) mData.get(position);
+                ListItemComplete listItem = (ListItemComplete) mData.get(position);
                 holder.item.setText(listItem.toString());
-                holder.checked.setChecked(listItem.checked);
+                holder.checked.setChecked(listItem.listItem.checked);
                 holder.checked.setTag(listItem);
                 break;
         }
