@@ -1,8 +1,9 @@
 package com.example.boyko.mike.groceries.repositories;
 
+import android.app.Application;
 import android.arch.lifecycle.LiveData;
+import android.support.annotation.NonNull;
 
-import com.example.boyko.mike.groceries.Groceries;
 import com.example.boyko.mike.groceries.db.AppDatabase;
 import com.example.boyko.mike.groceries.db.models.QuantityType;
 
@@ -19,9 +20,17 @@ import java.util.concurrent.CountDownLatch;
 
 public class QuantityTypeRepository {
 
-    public ArrayList<QuantityType> getTypes() {
-        LiveData<List<QuantityType>> types = AppDatabase.getInstance(Groceries.getAppContext()).quantityTypeDao().getAll();
-        return new ArrayList<QuantityType>();
+    private AppDatabase appDatabase;
+    private LiveData<List<QuantityType>> quantityTypes;
+
+    public QuantityTypeRepository(@NonNull Application application) {
+        appDatabase = AppDatabase.getInstance(application);
+
+        quantityTypes = appDatabase.quantityTypeDao().getAll();
+    }
+
+    public LiveData<List<QuantityType>> getTypes() {
+        return quantityTypes;
     }
 
 }

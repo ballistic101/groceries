@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "3102717086c223fb6061b5b2fdc04ce3",
+    "identityHash": "9ff1a9f82af36a3e96eba17b02993714",
     "entities": [
       {
         "tableName": "Category",
@@ -136,7 +136,24 @@
           ],
           "autoGenerate": true
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_list_item_quantity_type_id",
+            "unique": false,
+            "columnNames": [
+              "quantity_type_id"
+            ],
+            "createSql": "CREATE  INDEX `index_list_item_quantity_type_id` ON `${TABLE_NAME}` (`quantity_type_id`)"
+          },
+          {
+            "name": "index_list_item_category_id",
+            "unique": false,
+            "columnNames": [
+              "category_id"
+            ],
+            "createSql": "CREATE  INDEX `index_list_item_category_id` ON `${TABLE_NAME}` (`category_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "quantity_type",
@@ -209,7 +226,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"3102717086c223fb6061b5b2fdc04ce3\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"9ff1a9f82af36a3e96eba17b02993714\")"
     ]
   }
 }

@@ -20,9 +20,11 @@ import android.content.Intent;
 
 import java.util.List;
 
+import com.example.boyko.mike.groceries.EditItem.EditItemActivity;
 import com.example.boyko.mike.groceries.db.models.Category;
 import com.example.boyko.mike.groceries.db.models.InventoryItem;
 import com.example.boyko.mike.groceries.db.models.ListItem;
+import com.example.boyko.mike.groceries.db.models.ListItemComplete;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -60,13 +62,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                ListItem clickedListItem = arrayAdapter.getListItem(position);
+                ListItemComplete clickedListItem = arrayAdapter.getListItem(position);
 
                 // Only do something if the User clicked on a List ListItem and not a header.
                 if (clickedListItem != null) {
                     Intent intent = new Intent();
                     intent.setClass(MainActivity.this, EditItemActivity.class);
-                    intent.putExtra(ListItem.TAG, clickedListItem);
+                    intent.putExtra(ListItemComplete.TAG, clickedListItem);
                     startActivityForResult(intent, IntentConstants.EDIT_ITEM);
                 }
             }
@@ -75,12 +77,11 @@ public class MainActivity extends AppCompatActivity {
 
         arrayAdapter = new ItemArrayAdapter(this, android.R.layout.simple_list_item_1);
         listView.setAdapter(arrayAdapter);
-        // initializeListView( );
 
-        listItemViewModel.getListItems().observe(MainActivity.this, new Observer<List<ListItem>>() {
+        listItemViewModel.getListItemsComplete().observe(MainActivity.this, new Observer<List<ListItemComplete>>() {
             @Override
-            public void onChanged(@Nullable List<ListItem> listItems) {
-                arrayAdapter.setItems(listItems);
+            public void onChanged(@Nullable List<ListItemComplete> listItemCompletes) {
+                arrayAdapter.setItems(listItemCompletes);
             }
         });
 
@@ -178,17 +179,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String action = data.getStringExtra(EditItemActivity.ACTION_TAG);
-        ListItem listItem;
+        ListItemComplete listItem;
 
         switch(action) {
             case EditItemActivity.ACTION_UPDATE:
-                listItem = data.getParcelableExtra(ListItem.TAG);
-                listItemViewModel.saveItem(listItem);
+                listItem = data.getParcelableExtra(ListItemComplete.TAG);
+                listItemViewModel.saveItemComplete(listItem);
                 break;
 
             case EditItemActivity.ACTION_DELETE:
-                listItem = data.getParcelableExtra(ListItem.TAG);
-                listItemViewModel.deleteItem(listItem);
+                listItem = data.getParcelableExtra(ListItemComplete.TAG);
+                listItemViewModel.deleteItemComplete(listItem);
                 break;
 
             case EditItemActivity.ACTION_CANCEL:

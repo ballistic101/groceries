@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
-    tools:context="com.example.boyko.mike.groceries.EditItemActivity">
+    tools:context="com.example.boyko.mike.groceries.EditItem.EditItemActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -37,7 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingBottom="0dp"
-            tools:text="Quantity" />
+            android:text="Quantity" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -87,8 +87,7 @@
             android:id="@+id/categoryLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TextView"
-            tools:text="Category" />
+            android:text="Category" />
 
         <Spinner
             android:id="@+id/category"
@@ -101,7 +100,7 @@
             android:id="@+id/coupon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="I have a coupon for this listItem" />
+            android:text="I have a coupon for this listItem" />
 
         <EditText
             android:id="@+id/notes"
