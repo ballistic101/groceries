@@ -46,7 +46,7 @@ class DatabaseInitUtil {
 
     private static void generateQuantityTypeData(List<QuantityType> types) {
 
-        types.add(new QuantityType(1, "none", "none"));
+        types.add(new QuantityType(1, QuantityType.NONE, QuantityType.NONE));
         types.add(new QuantityType(2, "piece", "pieces"));
         types.add(new QuantityType(3, "bag", "bags"));
         types.add(new QuantityType(4, "bottle", "bottles"));

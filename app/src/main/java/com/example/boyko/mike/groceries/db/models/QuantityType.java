@@ -18,6 +18,9 @@ public class QuantityType implements Parcelable {
 
     public static final String TAG = "QuantityType";
 
+    public static final String NONE = "none";
+
+
     @PrimaryKey(autoGenerate = true)
     public int id;
 
