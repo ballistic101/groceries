@@ -19,6 +19,7 @@ import com.example.boyko.mike.groceries.R;
 import com.example.boyko.mike.groceries.db.models.Category;
 import com.example.boyko.mike.groceries.db.models.ListItemComplete;
 import com.example.boyko.mike.groceries.db.models.QuantityType;
+import com.example.boyko.mike.groceries.repositories.CategoryRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
 
     private EditItemViewModel editItemViewModel;
     private QuantityTypeAdapter quantityTypeAdapter;
+    private CategoryAdapter categoryAdapter;
 
     private EditText name;
     private TextView quantity;
@@ -64,13 +66,9 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
         quantityType.setOnItemSelectedListener(this);
 
         category = (Spinner) findViewById(R.id.category);
-        //CategoryRepository catMgr = CategoryRepository.getInstance();
-        //ArrayList<Category> categories = catMgr.getCategories();
-        ArrayList<Category> categories = new ArrayList<Category>();
-
-        ArrayAdapter<Category> categoryArrayAdapter = new ArrayAdapter<Category>(this, android.R.layout.simple_spinner_item, categories);
-        categoryArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        category.setAdapter(categoryArrayAdapter);
+        categoryAdapter = new CategoryAdapter(this, android.R.layout.simple_spinner_item);
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        category.setAdapter(categoryAdapter);
         // Spinner click listener
         category.setOnItemSelectedListener(this);
 
@@ -84,6 +82,22 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
                     for (int i=0; i<quantityTypeAdapter.getCount(); i++) {
                         if (((QuantityType)quantityTypeAdapter.getItem(i)).id == listItem.listItem.quantityTypeId) {
                             quantityType.setSelection(i);
+                        }
+                    }
+                }
+            }
+        });
+
+        editItemViewModel.getCategories().observe(this, new Observer<List<Category>>() {
+            @Override
+            public void onChanged(@Nullable List<Category> categories) {
+                categoryAdapter.setCategories(categories);
+
+                // With the categories now in place, set the category if it was set
+                if (listItem.listItem.categoryId != null) {
+                    for (int i = 0; i < categoryAdapter.getCount(); i++) {
+                        if (((Category) categoryAdapter.getItem(i)).id == listItem.listItem.categoryId) {
+                            category.setSelection(i);
                         }
                     }
                 }
@@ -114,8 +128,8 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
             if (listItem.category != null) {
                 // Loop through the categories because categoryArrayAdapter.getPosition is calling
                 // toString() under the covers for it's comparison and never finds the object.
-                for (int i=0; i<categoryArrayAdapter.getCount(); i++) {
-                    if (categoryArrayAdapter.getItem(i).id == listItem.category.id) {
+                for (int i=0; i<categoryAdapter.getCount(); i++) {
+                    if (((Category)categoryAdapter.getItem(i)).id == listItem.category.id) {
                         category.setSelection(i);
                     }
                 }
@@ -161,10 +175,28 @@ public class EditItemActivity extends AppCompatActivity implements AdapterView.O
         listItem.listItem.quantity = Integer.parseInt(quantity.getText().toString());
         listItem.quantityType = (QuantityType)quantityType.getSelectedItem();
         if (listItem.quantityType != null) {
-            listItem.listItem.quantityTypeId = new Long(listItem.quantityType.id);
+
+            // Special case: if quantity type is "None"
+            if (listItem.quantityType.single.equals(QuantityType.NONE)) {
+                listItem.quantityType = null;
+                listItem.listItem.quantityTypeId = null;
+            }
+            else {
+                listItem.listItem.quantityTypeId = new Long(listItem.quantityType.id);
+            }
         }
-        //listItem.quantityType = quantityType.;
-        //listItem.category = category;
+        listItem.category = (Category)category.getSelectedItem();
+        if (listItem.category != null) {
+
+            // Special case: if the category is "Uncategorized"
+            if (listItem.category.name.equals(Category.UNCATEGORIZED)) {
+                listItem.category = null;
+                listItem.listItem.categoryId = null;
+            }
+            else {
+                listItem.listItem.categoryId = new Long(listItem.category.id);
+            }
+        }
         listItem.listItem.coupon = coupon.isChecked();
         listItem.listItem.notes = notes.getText().toString();
 
